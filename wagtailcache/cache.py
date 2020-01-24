@@ -16,6 +16,13 @@ from wagtailcache.settings import wagtailcache_settings
 _wagcache = caches[wagtailcache_settings['WAGTAIL_CACHE_BACKEND']]
 
 
+def _get_prefix(request):
+    prefix = wagtailcache_settings['WAGTAIL_CACHE_PREFIX']
+    if callable(prefix):
+        return prefix(request)
+    return prefix
+
+
 class FetchFromCacheMiddleware(MiddlewareMixin):
     """
     Loads a request from the cache if it exists.
@@ -50,14 +57,15 @@ class FetchFromCacheMiddleware(MiddlewareMixin):
             return None  # Don't bother checking the cache.
 
         # try and get the cached GET response
-        cache_key = get_cache_key(request, None, 'GET', cache=_wagcache)
+        prefix = _get_prefix(request)
+        cache_key = get_cache_key(request, prefix, 'GET', cache=_wagcache)
         if cache_key is None:
             request._cache_update_cache = True
             return None  # No cache information available, need to rebuild.
         response = _wagcache.get(cache_key)
         # if it wasn't found and we are looking for a HEAD, try looking just for that
         if response is None and request.method == 'HEAD':
-            cache_key = get_cache_key(request, None, 'HEAD', cache=_wagcache)
+            cache_key = get_cache_key(request, prefix, 'HEAD', cache=_wagcache)
             response = _wagcache.get(cache_key)
 
         if response is None:
@@ -132,7 +140,8 @@ class UpdateCacheMiddleware(MiddlewareMixin):
             return response
         patch_response_headers(response, timeout)
         if timeout:
-            cache_key = learn_cache_key(request, response, timeout, None, cache=_wagcache)
+            prefix = _get_prefix(request)
+            cache_key = learn_cache_key(request, response, timeout, prefix, cache=_wagcache)
             if hasattr(response, 'render') and callable(response.render):
                 response.add_post_render_callback(
                     lambda r: _wagcache.set(cache_key, r, timeout)
