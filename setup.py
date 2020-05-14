@@ -6,7 +6,7 @@
 from setuptools import setup, find_packages
 from wagtailcache import __version__
 
-with open('README.md') as readme_file:
+with open('README.md', encoding='utf8') as readme_file:
     readme = readme_file.read()
 
 setup(
@@ -26,7 +26,11 @@ setup(
     ],
     extras_require={
         'dev': [
-            'pylint-django',
+            'flake8',
+            'mypy',
+            'pytest',
+            'pytest-cov',
+            'pytest-django',
             'sphinx',
             'twine',
             'wheel',
@@ -43,6 +47,7 @@ setup(
         'Framework :: Django :: 2.0',
         'Framework :: Django :: 2.1',
         'Framework :: Django :: 2.2',
+        'Framework :: Django :: 3.0',
         'Framework :: Wagtail',
         'Framework :: Wagtail :: 2',
     ],
