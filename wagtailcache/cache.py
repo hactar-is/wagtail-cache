@@ -47,7 +47,7 @@ def _patch_header(response: HttpResponse, status: Status) -> None:
 
 
 def _get_prefix(request):
-    prefix = wagtailcache_settings['WAGTAIL_CACHE_PREFIX']
+    prefix = wagtailcache_settings.WAGTAIL_CACHE_PREFIX
     if callable(prefix):
         return prefix(request)
     return prefix
